@@ -29,7 +29,7 @@ export const AppHttpRequests = () => {
       setTodolists(todolists)
       todolists.forEach((todolist) => {
         tasksApi.getTasks(todolist.id).then((res) => {
-          setTasks((prev) => ({ ...prev, [todolist.id]: res.data.items }))
+          setTasks((tasksState) => ({ ...tasksState, [todolist.id]: res.data.items }))
         })
       })
     })
@@ -39,6 +39,7 @@ export const AppHttpRequests = () => {
     todolistsApi.createTodolist(title).then((res) => {
       const newTodolist = res.data.data.item
       setTodolists([newTodolist, ...todolists])
+      setTasks((todolists) => ({ ...todolists, [newTodolist.id]: [] }))
     })
   }
 
@@ -59,7 +60,14 @@ export const AppHttpRequests = () => {
     })
   }
 
-  const deleteTask = (todolistId: string, taskId: string) => {}
+  const deleteTask = (todolistId: string, taskId: string) => {
+    tasksApi.deleteTask({ todolistId, taskId }).then(() => {
+      setTasks({
+        ...tasks,
+        [todolistId]: tasks[todolistId].filter((el) => el.id !== taskId),
+      })
+    })
+  }
 
   const changeTaskStatus = (e: ChangeEvent<HTMLInputElement>, task: DomainTask) => {
     const model: UpdateTaskModel = {
